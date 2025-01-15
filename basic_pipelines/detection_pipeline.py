@@ -17,6 +17,7 @@ from hailo_rpi_common import (
     INFERENCE_PIPELINE_WRAPPER,
     USER_CALLBACK_PIPELINE,
     DISPLAY_PIPELINE,
+    RTMP_PIPELINE,
     GStreamerApp,
     app_callback_class,
     dummy_callback,
@@ -49,6 +50,7 @@ class GStreamerDetectionApp(GStreamerApp):
         self.network_format = "RGB"
         nms_score_threshold = 0.3
         nms_iou_threshold = 0.45
+        self.show_fps = False
 
 
         # Determine the architecture if not specified
@@ -99,11 +101,13 @@ class GStreamerDetectionApp(GStreamerApp):
             additional_params=self.thresholds_str)
         user_callback_pipeline = USER_CALLBACK_PIPELINE()
         display_pipeline = DISPLAY_PIPELINE(video_sink=self.video_sink, sync=self.sync, show_fps=self.show_fps)
+        rtmp_pipeline = RTMP_PIPELINE(rtmp_location='rtmp://127.0.0.1:1935/stream')
         pipeline_string = (
             f'{source_pipeline} '
             f'{detection_pipeline} ! '
             f'{user_callback_pipeline} ! '
-            f'{display_pipeline}'
+            f'{rtmp_pipeline}'
+            #f'{display_pipeline}'
         )
         print(pipeline_string)
         return pipeline_string

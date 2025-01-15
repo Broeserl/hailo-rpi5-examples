@@ -321,6 +321,38 @@ def DISPLAY_PIPELINE(video_sink='xvimagesink', sync='true', show_fps='false', na
 
     return display_pipeline
 
+def RTMP_PIPELINE(
+    rtmp_location='rtmp://127.0.0.1:1935/test',
+    name='hailo_display',
+    show_fps='false'
+):
+    """
+    Creates a GStreamer pipeline string for streaming the video over RTSP.
+
+    Args:
+        rtmp_location (str, optional): The RTMP URI to which we send the stream.
+                                       Defaults to 'rtsp://127.0.0.1:1935/test'.
+        name (str, optional): The prefix name for the pipeline elements.
+                              Defaults to 'hailo_display'.
+        show_fps (str, optional): Whether to overlay FPS on the video; 'true' or 'false'.
+                                  Defaults to 'false'.
+
+    Returns:
+        str: A string representing the GStreamer pipeline for streaming via RTSP.
+    """
+    pipeline = (
+        f'{QUEUE(name=f"{name}_hailooverlay_q")} ! '
+        f'hailooverlay name={name}_hailooverlay ! '
+        f'{QUEUE(name=f"{name}_videoconvert_q")} ! '
+        f'videoconvert name={name}_videoconvert n-threads=2 qos=false ! '
+        f'{QUEUE(name=f"{name}_q")} ! '
+        f'x264enc tune=zerolatency bitrate=2048 speed-preset=ultrafast ! '
+        f'flvmux ! '
+        f'rtmpsink location={rtmp_location} '
+    )
+
+    return pipeline
+
 def USER_CALLBACK_PIPELINE(name='identity_callback'):
     """
     Creates a GStreamer pipeline string for the user callback element.
